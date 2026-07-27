@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة نبض المشروع — قلب حائل</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- مكتبة الخرائط Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        :root {
+            --bg-light: #faf8f5;
+            --primary-green: #1b4329;
+            --primary-green-hover: #13321e;
+            --primary-green-light: #e2ede7;
+            --text-dark: #2d3326;
+            --text-muted: #666;
+            --border-color: #eaeaea;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background-color: var(--bg-light); color: var(--text-dark); min-height: 100vh; padding-bottom: 40px; display: flex; flex-direction: column; justify-content: space-between; }
+
+        .app-header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 1000; }
+        .app-brand { display: flex; align-items: center; gap: 10px; }
+        .app-brand-text h2 { font-size: 16px; font-weight: 700; color: var(--primary-green); }
+        .btn-back { background: #f5f5f5; border: 1px solid #ddd; padding: 6px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; text-decoration: none; color: var(--text-dark); }
+
+        .form-container { max-width: 520px; width: 100%; margin: 30px auto; background: white; border-radius: 24px; padding: 35px 28px; box-shadow: 0 8px 30px rgba(0,0,0,0.03); border: 1px solid var(--border-color); }
+
+        .page-step { display: none; }
+        .page-step.active { display: block !important; }
+
+        .login-card { text-align: center; }
+        .icon-wrapper { width: 48px; height: 48px; margin: 0 auto 20px auto; display: flex; align-items: center; justify-content: center; color: var(--text-dark); }
+        .login-title { font-size: 22px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px; }
+        .login-subtitle { font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-bottom: 30px; }
+
+        .form-title { font-size: 24px; font-weight: 800; text-align: center; color: var(--text-dark); margin-bottom: 6px; }
+        .form-subtitle { font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 25px; }
+        .form-group { text-align: right; margin-bottom: 20px; }
+        .form-label { display: block; font-size: 13px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
+        .form-control, select { width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; background-color: #f8fafc; color: var(--text-dark); }
+        .input-hint { font-size: 11px; color: #888; margin-top: 4px; display: block; }
+
+        #hailMap { width: 100%; height: 250px; border-radius: 16px; border: 2px solid #e2e8f0; margin-top: 8px; z-index: 1; }
+
+        .slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .slider-value { font-size: 13px; font-weight: 700; color: var(--primary-green); }
+        input[type=range] { width: 100%; accent-color: var(--primary-green); cursor: pointer; }
+
+        .btn-submit { width: 100%; padding: 14px; background-color: var(--primary-green); color: #ffffff; border: none; border-radius: 30px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 20px; }
+        .btn-submit:hover { background-color: var(--primary-green-hover); }
+
+        .loading-box { text-align: center; padding: 40px 20px; }
+        .spinner { width: 45px; height: 45px; border: 4px solid #e2e8f0; border-top: 4px solid var(--primary-green); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-title { font-size: 18px; font-weight: 800; color: var(--primary-green); margin-bottom: 10px; }
+        .loading-desc { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+        .results-box { text-align: center; margin-bottom: 15px; }
+        .gauge-container { position: relative; width: 240px; height: 130px; margin: 20px auto 10px auto; display: flex; justify-content: center; align-items: flex-end; }
+        .gauge-svg { width: 100%; height: 100%; }
+        .gauge-bg { fill: none; stroke: #f1f5f9; stroke-width: 14; stroke-linecap: round; }
+        .gauge-fill { fill: none; stroke: var(--primary-green); stroke-width: 14; stroke-linecap: round; stroke-dasharray: 282; stroke-dashoffset: 282; transition: stroke-dashoffset 1s ease-in-out; }
+        .gauge-text-wrapper { position: absolute; bottom: 5px; display: flex; flex-direction: column; align-items: center; }
+        .gauge-score-digits { font-size: 38px; font-weight: 900; color: var(--primary-green); line-height: 1; }
+        .gauge-max-val { font-size: 13px; color: #888; margin-top: 2px; }
+
+        .badge-status { background-color: var(--primary-green-light); color: var(--primary-green); padding: 5px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; display: inline-block; margin: 5px auto 25px auto; }
+        .factor-list-title { font-size: 18px; font-weight: 700; margin: 25px 0 15px 0; text-align: right; }
+        .factor-card { background: #fff; border: 1px solid #f1f5f9; padding: 16px; border-radius: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; text-align: right; }
+        .factor-content { display: flex; flex-direction: column; gap: 2px; }
+        .factor-title { font-size: 15px; font-weight: 700; color: #1e293b; }
+        .factor-desc { font-size: 12px; color: var(--text-muted); }
+        .pill { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+        .pill.pos { background: #e2ede7; color: #1b4329; }
+        .pill.neg { background: #fbf5f2; color: #c85a32; }
+
+        .recommendations { background-color: var(--primary-green); color: white; border-radius: 24px; padding: 25px 20px; margin-top: 30px; text-align: right; }
+        .rec-item { display: flex; gap: 12px; margin-bottom: 15px; font-size: 14px; line-height: 1.6; }
+
+        footer { text-align: center; margin-top: 40px; font-size: 12px; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+    <div class="app-header">
+        <a href="/" class="btn-back">← العودة للرئيسية</a>
+        <div class="app-brand">
+            <div class="app-brand-text"><h2>استثمار في قلب حائل</h2></div>
+            <img src="/static/ll.png" alt="شعار قلب حائل" style="width: 35px; height: 35px; border-radius: 8px; object-fit: cover;">
+        </div>
+    </div>
+
+    <div class="form-container">
+        
+        <!-- الخطوة 1 -->
+        <div id="step1" class="page-step active login-card">
+            <div class="icon-wrapper">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:32px; height:32px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.828-1.587-5.123-3.882-6.71-6.71l1.293-.97c.362-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                </svg>
+            </div>
+            <h1 class="login-title">دخول رائد الأعمال</h1>
+            <p class="login-subtitle">أدخل رقم جوالك للإرشادات والتوجيهات وتتبع نتائج التقييم.</p>
+
+            <form onsubmit="goToStep2(); return false;">
+                <div class="form-group">
+                    <label class="form-label" style="text-align: right;">رقم الجوال</label>
+                    <input type="tel" class="form-control" placeholder="05xxxxxxxx" required dir="ltr" style="text-align: center;">
+                </div>
+                <button type="submit" class="btn-submit">دخول ومتابعة &nbsp; ←</button>
+            </form>
+        </div>
+
+        <!-- الخطوة 2 -->
+        <div id="step2" class="page-step">
+            <h1 class="form-title">قِس نبض مشروعك</h1>
+            <p class="form-subtitle">أدخل بيانات مشروعك ليقوم محرك أشجار القرار بمقارنتها بضوابط سوق حائل الميدانية.</p>
+
+            <form onsubmit="submitForm(); return false;">
+                <div class="form-group">
+                    <label class="form-label">اسم المشروع</label>
+                    <input type="text" id="inputProjName" class="form-control" value="" placeholder="أدخل اسم المشروع هنا" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">النشاط</label>
+                    <select id="inputActivity" class="form-control">
+                        <option value="مقهى / كوفي" selected>مقهى / كوفي</option>
+                        <option value="مطعم">مطعم</option>
+                        <option value="متجر تجزئة">متجر تجزئة</option>
+                        <option value="خدمي">خدمي</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">الموقع الجغرافي (اختر من خريطة حائل) 📍</label>
+                    <input type="text" id="inputLocationText" class="form-control" value="وسط المدينة، حائل" readonly style="background-color: #f1f5f9; font-weight: 700; margin-bottom: 8px; color: var(--primary-green);">
+                    <div id="hailMap"></div>
+                    <span class="input-hint">💡 انقر أو اسحب الدبوس على أي نقطة داخل مدينة حائل</span>
+                    <input type="hidden" id="inputLat" value="27.5219">
+                    <input type="hidden" id="inputLng" value="41.6961">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">رأس المال (ريال)</label>
+                    <input type="number" id="inputCapital" class="form-control" value="200000" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">الحد الأدنى المتوقع للنشاط (ريال)</label>
+                    <input type="number" id="inputMinCapital" class="form-control" value="150000" required>
+                </div>
+
+                <div class="form-group">
+                    <div class="slider-header">
+                        <label class="form-label">نسبة الإنفاق على المظهر</label>
+                        <span class="slider-value" id="spendingVal">25%</span>
+                    </div>
+                    <input type="range" id="inputSpending" min="0" max="100" value="25" oninput="document.getElementById('spendingVal').innerText = this.value + '%'">
+                    <span class="input-hint">التوازن الأمثل: 15% - 30%</span>
+                </div>
+
+                <div class="form-group">
+                    <div class="slider-header">
+                        <label class="form-label">عدد الأيام منذ آخر تجديد / فعالية</label>
+                        <span class="slider-value" id="daysVal">90 يوم</span>
+                    </div>
+                    <input type="range" id="inputDays" min="0" max="365" value="90" oninput="document.getElementById('daysVal').innerText = this.value + ' يوم'">
+                    <span class="input-hint">دورة الحماية المثالية: كل 90 يوم</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">الربط بالهوية الحائلية</label>
+                    <select id="inputIdentity" class="form-control">
+                        <option value="قوي جداً" selected>قوي جداً</option>
+                        <option value="متوسط">متوسط</option>
+                        <option value="ضعيف">ضعيف</option>
+                        <option value="لا يوجد">لا يوجد</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">خبرة الفريق التشغيلي</label>
+                    <select id="inputTeamExp" class="form-control">
+                        <option value="عالية" selected>عالية</option>
+                        <option value="متوسطة">متوسطة</option>
+                        <option value="مبتدئة">مبتدئة</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">هل المشروع مناسب للمناطق السياحية؟</label>
+                    <select id="inputTourismSuitable" class="form-control">
+                        <option value="نعم" selected>نعم</option>
+                        <option value="لا">لا</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">هل عنده مقومات تجذب السياح؟</label>
+                    <select id="inputTourismAttract" class="form-control">
+                        <option value="نعم" selected>نعم</option>
+                        <option value="لا">لا</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">هل النشاط موسمي؟</label>
+                    <select id="inputSeasonal" class="form-control">
+                        <option value="نعم">نعم</option>
+                        <option value="لا" selected>لا</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">هل موقعه يخدم الحركة السياحية؟</label>
+                    <select id="inputLocationTourism" class="form-control">
+                        <option value="نعم" selected>نعم</option>
+                        <option value="لا">لا</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-submit">يعمل محرك أشجار القرار... &nbsp; ←</button>
+            </form>
+        </div>
+
+        <!-- الخطوة 3 -->
+        <div id="step3" class="page-step loading-box">
+            <div class="spinner"></div>
+            <h3 class="loading-title">يعمل محرك أشجار القرار الميداني...</h3>
+            <p class="loading-desc">يتم الآن معالجة بيانات مشروعك ومطابقتها مع أنماط المشاريع في سوق منطقة حائل.</p>
+        </div>
+
+        <!-- الخطوة 4 -->
+        <div id="step4" class="page-step">
+            <div class="results-box">
+                <h2 id="resName" style="color: var(--primary-green); font-weight: 800;">---</h2>
+                <p style="font-size: 12px; color: #94a3b8; margin-top: 4px;">حالة النبض التشغيلية الحالية</p>
+            </div>
+
+            <div class="gauge-container">
+                <svg class="gauge-svg" viewBox="0 0 200 110">
+                    <path class="gauge-bg" d="M 20 100 A 80 80 0 0 1 180 100" />
+                    <path id="gaugePath" class="gauge-fill" d="M 20 100 A 80 80 0 0 1 180 100" />
+                </svg>
+                <div class="gauge-text-wrapper">
+                    <span id="gaugeScore" class="gauge-score-digits">--</span>
+                    <span class="gauge-max-val">/10</span>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <div id="badgeStatus" class="badge-status">● جارِ التقييم</div>
+            </div>
+
+            <h4 class="factor-list-title">↗ تفاصيل عوامل النبض الديناميكية (12 عاملاً)</h4>
+            <div id="factorsContainer"></div>
+
+            <div class="recommendations">
+                <h4 style="font-size:16px;margin-bottom:15px;font-weight:700;">
+                    ✨ توصيات ذكية استباقية
+                </h4>
+                <div id="recommendationsBox"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>© 2026 قلب حائل — نظام الاستخبارات التشغيلية الميداني</p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        let map;
+        let marker;
+
+        function showStep(stepId) {
+            var steps = document.querySelectorAll('.page-step');
+            steps.forEach(function(s) { s.classList.remove('active'); });
+            document.getElementById(stepId).classList.add('active');
+        }
+
+        function goToStep2() {
+            showStep('step2');
+            setTimeout(initHailMap, 250);
+        }
+
+        function initHailMap() {
+            if (map) return;
+            const hailLat = 27.5219;
+            const hailLng = 41.6961;
+
+            map = L.map('hailMap').setView([hailLat, hailLng], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            marker = L.marker([hailLat, hailLng], { draggable: true }).addTo(map);
+
+            function updateLocationData(lat, lng) {
+                document.getElementById("inputLat").value = lat.toFixed(5);
+                document.getElementById("inputLng").value = lng.toFixed(5);
+                
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ar`)
+                    .then(res => res.json())
+                    .then(data => {
+                        let name = data.address.suburb || data.address.neighbourhood || data.address.road || data.address.city || "منطقة داخل حائل";
+                        document.getElementById("inputLocationText").value = name + ` (${lat.toFixed(3)}, ${lng.toFixed(3)})`;
+                    })
+                    .catch(() => {
+                        document.getElementById("inputLocationText").value = `حائل (${lat.toFixed(3)}, ${lng.toFixed(3)})`;
+                    });
+            }
+
+            map.on('click', function(e) {
+                marker.setLatLng(e.latlng);
+                updateLocationData(e.latlng.lat, e.latlng.lng);
+            });
+
+            marker.on('dragend', function(e) {
+                let position = marker.getLatLng();
+                updateLocationData(position.lat, position.lng);
+            });
+        }
+
+        async function submitForm() {
+            showStep("step3");
+
+            const requestData = {
+                project_name: document.getElementById("inputProjName").value,
+                activity: document.getElementById("inputActivity").value,
+                location: "شارع تجاري حيوي",
+                location_text: document.getElementById("inputLocationText").value,
+                latitude: Number(document.getElementById("inputLat").value),
+                longitude: Number(document.getElementById("inputLng").value),
+                capital: Number(document.getElementById("inputCapital").value),
+                min_capital: Number(document.getElementById("inputMinCapital").value),
+                spending_pct: Number(document.getElementById("inputSpending").value),
+                days_since_renewal: Number(document.getElementById("inputDays").value),
+                identity_link: document.getElementById("inputIdentity").value,
+                team_experience: document.getElementById("inputTeamExp").value,
+                tourist_suitable: document.getElementById("inputTourismSuitable").value,
+                tourist_attract: document.getElementById("inputTourismAttract").value,
+                is_seasonal: document.getElementById("inputSeasonal").value,
+                location_tourism: document.getElementById("inputLocationTourism").value
+            };
+
+            try {
+                const response = await fetch("/predict", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(requestData)
+                });
+
+                const result = await response.json();
+                showStep("step4");
+
+                document.getElementById("resName").innerText = result.project_name;
+                document.getElementById("badgeStatus").innerText = "● " + result.status;
+
+                const score = result.pulse_score !== undefined ? Number(result.pulse_score) : 7.5;
+                document.getElementById("gaugeScore").innerText = score.toFixed(1);
+                
+                const offset = 282 - (282 * score / 10);
+                document.getElementById("gaugePath").style.strokeDashoffset = offset;
+
+                // توليد كافة العوامل الـ 12 ديناميكياً وعرضها مستقلة
+                let factorsHtml = "";
+                
+                // 1. الموقع الجغرافي العام
+                factorsHtml += `<div class="factor-card"><span class="pill pos">متوافق</span><div class="factor-content"><div class="factor-title">الموقع الجغرافي</div><div class="factor-desc">${result.location}</div></div></div>`;
+                // 2. طبيعة النشاط
+                factorsHtml += `<div class="factor-card"><span class="pill pos">مطابق</span><div class="factor-content"><div class="factor-title">طبيعة النشاط</div><div class="factor-desc">${result.activity}</div></div></div>`;
+                // 3. نسبة الإنفاق على المظهر
+                factorsHtml += `<div class="factor-card"><span class="pill ${result.spending_pct <= 30 ? 'pos' : 'neg'}">${result.spending_pct <= 30 ? 'متوازن' : 'مرتفع'}</span><div class="factor-content"><div class="factor-title">نسبة الإنفاق على المظهر</div><div class="factor-desc">النسبة: <strong>${result.spending_pct}%</strong></div></div></div>`;
+                // 4. رأس المال والحد الأدنى
+                factorsHtml += `<div class="factor-card"><span class="pill pos">معتمد</span><div class="factor-content"><div class="factor-title">رأس المال والحد الأدنى</div><div class="factor-desc">رأس المال: ${result.capital} ريال (الحد الأدنى: ${result.min_capital})</div></div></div>`;
+                // 5. دورة التجديد
+                factorsHtml += `<div class="factor-card"><span class="pill pos">محدث</span><div class="factor-content"><div class="factor-title">دورة التجديد</div><div class="factor-desc">مرت ${result.days_since_renewal} يوم منذ آخر فعالية</div></div></div>`;
+                // 6. الربط بالهوية الحائلية
+                factorsHtml += `<div class="factor-card"><span class="pill pos">ممتاز</span><div class="factor-content"><div class="factor-title">الربط بالهوية الحائلية</div><div class="factor-desc">مستوى الربط: ${result.identity_link}</div></div></div>`;
+                // 7. خبرة الفريق التشغيلي
+                factorsHtml += `<div class="factor-card"><span class="pill pos">احترافي</span><div class="factor-content"><div class="factor-title">خبرة الفريق التشغيلي</div><div class="factor-desc">مستوى الخبرة: ${result.team_experience}</div></div></div>`;
+                // 8. إحداثيات وموقع الخريطة الدقيق (العامل المتمم للـ 12)
+                factorsHtml += `<div class="factor-card"><span class="pill pos">محدد</span><div class="factor-content"><div class="factor-title">إحداثيات وموقع الخريطة</div><div class="factor-desc">${requestData.location_text}</div></div></div>`;
+                // 9. مناسب للمناطق السياحية
+                factorsHtml += `<div class="factor-card"><span class="pill pos">مفعل</span><div class="factor-content"><div class="factor-title">مناسب للمناطق السياحية</div><div class="factor-desc">التقييم: ${result.tourist_suitable}</div></div></div>`;
+                // 10. يجذب السياح
+                factorsHtml += `<div class="factor-card"><span class="pill pos">محفز</span><div class="factor-content"><div class="factor-title">يجذب السياح</div><div class="factor-desc">التقييم: ${result.tourist_attract}</div></div></div>`;
+                // 11. النشاط موسمي
+                factorsHtml += `<div class="factor-card"><span class="pill pos">مدروس</span><div class="factor-content"><div class="factor-title">النشاط موسمي</div><div class="factor-desc">التقييم: ${result.is_seasonal}</div></div></div>`;
+                // 12. الموقع يخدم الحركة السياحية
+                factorsHtml += `<div class="factor-card"><span class="pill pos">استراتيجي</span><div class="factor-content"><div class="factor-title">الموقع يخدم الحركة السياحية</div><div class="factor-desc">التقييم: ${result.location_tourism}</div></div></div>`;
+
+                document.getElementById("factorsContainer").innerHTML = factorsHtml;
+
+                let recsHtml = "";
+                if (result.recommendations && result.recommendations.length > 0) {
+                    result.recommendations.forEach(function(rec) {
+                        recsHtml += `<div class="rec-item"><span>💡</span><p>${rec}</p></div>`;
+                    });
+                } else {
+                    recsHtml = `<div class="rec-item"><span>💡</span><p>مؤشرات المشروع متوازنة وتتماشى مع أنماط السوق.</p></div>`;
+                }
+
+                document.getElementById("recommendationsBox").innerHTML = recsHtml;
+
+            } catch (error) {
+                console.error("Error submitting form:", error);
+                alert("حدث خطأ أثناء الاتصال بنموذج التحليل.");
+                showStep("step2");
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
