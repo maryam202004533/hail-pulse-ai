@@ -1,3 +1,4 @@
+
 from flask import Flask, render_template, request, jsonify
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
@@ -21,17 +22,17 @@ df = pd.read_excel(EXCEL_PATH)
 df.columns = df.columns.astype(str).str.strip()
 
 feature_cols = [
-    'activity', 'location', 'capital', 'min_capital', 'spending_pct', 
-    'days_since_renewal', 'identity_link', 'team_experience',
-    'tourism_suitable', 'tourism_attract', 'is_seasonal', 'location_tourism'
+    'النشاط', 'الموقع', 'رأس المال', 'الحد الأدنى التشغيلي', 'نسبة الإنفاق على المظهر', 
+    'الأيام منذ آخر تجديد', 'الربط بالهوية الحائلية', 'خبرة الفريق',
+    'مناسب للمناطق السياحية', 'يجذب السياح', 'النشاط موسمي', 'الموقع يخدم السياحة'
 ]
 
 X = df[feature_cols]
-y = df['status']
+y = df['حالة المشروع']
 
 categorical_cols = [
-    'activity', 'location', 'identity_link', 'team_experience', 
-    'tourism_suitable', 'tourism_attract', 'is_seasonal', 'location_tourism'
+    'النشاط', 'الموقع', 'الربط بالهوية الحائلية', 'خبرة الفريق', 
+    'مناسب للمناطق السياحية', 'يجذب السياح', 'النشاط موسمي', 'الموقع يخدم السياحة'
 ]
 
 preprocessor = ColumnTransformer(
@@ -51,6 +52,9 @@ print("✅ تم تدريب نموذج DecisionTreeClassifier بنجاح على �
 
 # 2. المسارات (Routes)
 @app.route('/')
+def home():
+    return render_template('index.html')
+
 @app.route('/pulse')
 def pulse_page():
     return render_template('pulse.html')
@@ -80,20 +84,20 @@ def predict():
     latitude = float(data.get('latitude', 27.5219))
     longitude = float(data.get('longitude', 41.6961))
 
-    # تجهيز المدخلات للنموذج بنفس ترتيب أعمدة التدريب بالضبط
+    # تجهيز المدخلات للنموذج بنفس ترتيب أعمدة التدريب بالضبط (بالأسماء العربية)
     input_df = pd.DataFrame([{
-        'activity': activity,
-        'location': location_type,
-        'capital': capital,
-        'min_capital': min_capital,
-        'spending_pct': spending_pct,
-        'days_since_renewal': days_since_renewal,
-        'identity_link': identity_link,
-        'team_experience': team_experience,
-        'tourism_suitable': tourism_suitable,
-        'tourism_attract': tourism_attract,
-        'is_seasonal': is_seasonal,
-        'location_tourism': location_tourism
+        'النشاط': activity,
+        'الموقع': location_type,
+        'رأس المال': capital,
+        'الحد الأدنى التشغيلي': min_capital,
+        'نسبة الإنفاق على المظهر': spending_pct,
+        'الأيام منذ آخر تجديد': days_since_renewal,
+        'الربط بالهوية الحائلية': identity_link,
+        'خبرة الفريق': team_experience,
+        'مناسب للمناطق السياحية': tourism_suitable,
+        'يجذب السياح': tourism_attract,
+        'النشاط موسمي': is_seasonal,
+        'الموقع يخدم السياحة': location_tourism
     }])
 
     # التنبؤ بالحالة بواسطة نموذج الذكاء الاصطناعي
