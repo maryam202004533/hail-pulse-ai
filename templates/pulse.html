@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -83,6 +85,31 @@
 
         .recommendations { background-color: var(--primary-green); color: white; border-radius: 24px; padding: 25px 20px; margin-top: 30px; text-align: right; }
         .rec-item { display: flex; gap: 12px; margin-bottom: 15px; font-size: 14px; line-height: 1.6; }
+
+        /* زر التواصل المباشر بالخبير عبر واتساب */
+        .whatsapp-expert-box {
+            margin-top: 25px;
+            text-align: center;
+        }
+        .btn-whatsapp-expert {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background-color: #25d366;
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background 0.3s ease;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+            width: 100%;
+        }
+        .btn-whatsapp-expert:hover {
+            background-color: #1ebe5d;
+        }
 
         footer { text-align: center; margin-top: 40px; font-size: 12px; color: var(--text-muted); }
     </style>
@@ -269,6 +296,13 @@
                 </h4>
                 <div id="recommendationsBox"></div>
             </div>
+
+            <!-- زر التواصل المباشر مع الخبير الميداني عبر الرقم الجديد -->
+            <div class="whatsapp-expert-box">
+                <a href="https://wa.me/966553407241" target="_blank" class="btn-whatsapp-expert">
+                    💬 استشر خبيراً ميدانياً عبر الواتساب
+                </a>
+            </div>
         </div>
 
     </div>
@@ -390,7 +424,7 @@
                 factorsHtml += `<div class="factor-card"><span class="pill pos">ممتاز</span><div class="factor-content"><div class="factor-title">الربط بالهوية الحائلية</div><div class="factor-desc">مستوى الربط: ${result.identity_link}</div></div></div>`;
                 // 7. خبرة الفريق التشغيلي
                 factorsHtml += `<div class="factor-card"><span class="pill pos">احترافي</span><div class="factor-content"><div class="factor-title">خبرة الفريق التشغيلي</div><div class="factor-desc">مستوى الخبرة: ${result.team_experience}</div></div></div>`;
-                // 8. إحداثيات وموقع الخريطة الدقيق (العامل المتمم للـ 12)
+                // 8. إحداثيات وموقع الخريطة الدقيق
                 factorsHtml += `<div class="factor-card"><span class="pill pos">محدد</span><div class="factor-content"><div class="factor-title">إحداثيات وموقع الخريطة</div><div class="factor-desc">${requestData.location_text}</div></div></div>`;
                 // 9. مناسب للمناطق السياحية
                 factorsHtml += `<div class="factor-card"><span class="pill pos">مفعل</span><div class="factor-content"><div class="factor-title">مناسب للمناطق السياحية</div><div class="factor-desc">التقييم: ${result.tourist_suitable}</div></div></div>`;
