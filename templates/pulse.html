@@ -1,11 +1,10 @@
 
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حاسبة نبض المشروع — قلب حائل</title>
+    <title>حاسبة نبض المشروع — منصة قرار الذكية</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
@@ -119,8 +118,8 @@
     <div class="app-header">
         <a href="/" class="btn-back">← العودة للرئيسية</a>
         <div class="app-brand">
-            <div class="app-brand-text"><h2>استثمار في قلب حائل</h2></div>
-            <img src="/static/ll.png" alt="شعار قلب حائل" style="width: 35px; height: 35px; border-radius: 8px; object-fit: cover;">
+            <div class="app-brand-text"><h2>استثمر بذكاء مع منصة قرار الذكية</h2></div>
+            <img src="/static/ll.png" alt="شعار منصة قرار الذكية" style="width: 35px; height: 35px; border-radius: 8px; object-fit: cover;">
         </div>
     </div>
 
@@ -148,7 +147,7 @@
         <!-- الخطوة 2 -->
         <div id="step2" class="page-step">
             <h1 class="form-title">قِس نبض مشروعك</h1>
-            <p class="form-subtitle">أدخل بيانات مشروعك ليقوم محرك أشجار القرار بمقارنتها بضوابط سوق حائل الميدانية.</p>
+            <p class="form-subtitle">أدخل بيانات مشروعك ليقوم محرك أشجار القرار بمقارنتها بضوابط السوق الميدانية.</p>
 
             <form onsubmit="submitForm(); return false;">
                 <div class="form-group">
@@ -167,10 +166,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">الموقع الجغرافي (اختر من خريطة حائل) 📍</label>
-                    <input type="text" id="inputLocationText" class="form-control" value="وسط المدينة، حائل" readonly style="background-color: #f1f5f9; font-weight: 700; margin-bottom: 8px; color: var(--primary-green);">
+                    <label class="form-label">الموقع الجغرافي (اختر من الخريطة) 📍</label>
+                    <input type="text" id="inputLocationText" class="form-control" value="وسط المدينة" readonly style="background-color: #f1f5f9; font-weight: 700; margin-bottom: 8px; color: var(--primary-green);">
                     <div id="hailMap"></div>
-                    <span class="input-hint">💡 انقر أو اسحب الدبوس على أي نقطة داخل مدينة حائل</span>
+                    <span class="input-hint">💡 انقر أو اسحب الدبوس على أي نقطة للموقع المستهدف</span>
                     <input type="hidden" id="inputLat" value="27.5219">
                     <input type="hidden" id="inputLng" value="41.6961">
                 </div>
@@ -204,7 +203,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">الربط بالهوية الحائلية</label>
+                    <label class="form-label">الربط بالهوية والبيئة المحلية</label>
                     <select id="inputIdentity" class="form-control">
                         <option value="قوي جداً" selected>قوي جداً</option>
                         <option value="متوسط">متوسط</option>
@@ -262,7 +261,7 @@
         <div id="step3" class="page-step loading-box">
             <div class="spinner"></div>
             <h3 class="loading-title">يعمل محرك أشجار القرار الميداني...</h3>
-            <p class="loading-desc">يتم الآن معالجة بيانات مشروعك ومطابقتها مع أنماط المشاريع في سوق منطقة حائل.</p>
+            <p class="loading-desc">يتم الآن معالجة بيانات مشروعك ومطابقتها مع أنماط المشاريع الذكية.</p>
         </div>
 
         <!-- الخطوة 4 -->
@@ -297,7 +296,7 @@
                 <div id="recommendationsBox"></div>
             </div>
 
-            <!-- زر التواصل المباشر مع الخبير الميداني عبر الرقم الجديد -->
+            <!-- زر التواصل المباشر مع الخبير الميداني عبر الرقم المعتمد -->
             <div class="whatsapp-expert-box">
                 <a href="https://wa.me/966553407241" target="_blank" class="btn-whatsapp-expert">
                     💬 استشر خبيراً ميدانياً عبر الواتساب
@@ -308,7 +307,7 @@
     </div>
 
     <footer>
-        <p>© 2026 قلب حائل — نظام الاستخبارات التشغيلية الميداني</p>
+        <p>© 2026 استثمر بذكاء مع منصة قرار الذكية — نظام الاستخبارات التشغيلية الميداني</p>
     </footer>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -330,15 +329,15 @@
 
         function initHailMap() {
             if (map) return;
-            const hailLat = 27.5219;
-            const hailLng = 41.6961;
+            const defaultLat = 27.5219;
+            const defaultLng = 41.6961;
 
-            map = L.map('hailMap').setView([hailLat, hailLng], 12);
+            map = L.map('hailMap').setView([defaultLat, defaultLng], 12);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap'
             }).addTo(map);
 
-            marker = L.marker([hailLat, hailLng], { draggable: true }).addTo(map);
+            marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
 
             function updateLocationData(lat, lng) {
                 document.getElementById("inputLat").value = lat.toFixed(5);
@@ -347,11 +346,11 @@
                 fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ar`)
                     .then(res => res.json())
                     .then(data => {
-                        let name = data.address.suburb || data.address.neighbourhood || data.address.road || data.address.city || "منطقة داخل حائل";
+                        let name = data.address.suburb || data.address.neighbourhood || data.address.road || data.address.city || "منطقة مختارة";
                         document.getElementById("inputLocationText").value = name + ` (${lat.toFixed(3)}, ${lng.toFixed(3)})`;
                     })
                     .catch(() => {
-                        document.getElementById("inputLocationText").value = `حائل (${lat.toFixed(3)}, ${lng.toFixed(3)})`;
+                        document.getElementById("inputLocationText").value = `الموقع (${lat.toFixed(3)}, ${lng.toFixed(3)})`;
                     });
             }
 
@@ -410,29 +409,17 @@
                 // توليد كافة العوامل الـ 12 ديناميكياً وعرضها مستقلة
                 let factorsHtml = "";
                 
-                // 1. الموقع الجغرافي العام
                 factorsHtml += `<div class="factor-card"><span class="pill pos">متوافق</span><div class="factor-content"><div class="factor-title">الموقع الجغرافي</div><div class="factor-desc">${result.location}</div></div></div>`;
-                // 2. طبيعة النشاط
                 factorsHtml += `<div class="factor-card"><span class="pill pos">مطابق</span><div class="factor-content"><div class="factor-title">طبيعة النشاط</div><div class="factor-desc">${result.activity}</div></div></div>`;
-                // 3. نسبة الإنفاق على المظهر
                 factorsHtml += `<div class="factor-card"><span class="pill ${result.spending_pct <= 30 ? 'pos' : 'neg'}">${result.spending_pct <= 30 ? 'متوازن' : 'مرتفع'}</span><div class="factor-content"><div class="factor-title">نسبة الإنفاق على المظهر</div><div class="factor-desc">النسبة: <strong>${result.spending_pct}%</strong></div></div></div>`;
-                // 4. رأس المال والحد الأدنى
                 factorsHtml += `<div class="factor-card"><span class="pill pos">معتمد</span><div class="factor-content"><div class="factor-title">رأس المال والحد الأدنى</div><div class="factor-desc">رأس المال: ${result.capital} ريال (الحد الأدنى: ${result.min_capital})</div></div></div>`;
-                // 5. دورة التجديد
                 factorsHtml += `<div class="factor-card"><span class="pill pos">محدث</span><div class="factor-content"><div class="factor-title">دورة التجديد</div><div class="factor-desc">مرت ${result.days_since_renewal} يوم منذ آخر فعالية</div></div></div>`;
-                // 6. الربط بالهوية الحائلية
-                factorsHtml += `<div class="factor-card"><span class="pill pos">ممتاز</span><div class="factor-content"><div class="factor-title">الربط بالهوية الحائلية</div><div class="factor-desc">مستوى الربط: ${result.identity_link}</div></div></div>`;
-                // 7. خبرة الفريق التشغيلي
+                factorsHtml += `<div class="factor-card"><span class="pill pos">ممتاز</span><div class="factor-content"><div class="factor-title">الربط بالهوية المحلية</div><div class="factor-desc">مستوى الربط: ${result.identity_link}</div></div></div>`;
                 factorsHtml += `<div class="factor-card"><span class="pill pos">احترافي</span><div class="factor-content"><div class="factor-title">خبرة الفريق التشغيلي</div><div class="factor-desc">مستوى الخبرة: ${result.team_experience}</div></div></div>`;
-                // 8. إحداثيات وموقع الخريطة الدقيق
                 factorsHtml += `<div class="factor-card"><span class="pill pos">محدد</span><div class="factor-content"><div class="factor-title">إحداثيات وموقع الخريطة</div><div class="factor-desc">${requestData.location_text}</div></div></div>`;
-                // 9. مناسب للمناطق السياحية
                 factorsHtml += `<div class="factor-card"><span class="pill pos">مفعل</span><div class="factor-content"><div class="factor-title">مناسب للمناطق السياحية</div><div class="factor-desc">التقييم: ${result.tourist_suitable}</div></div></div>`;
-                // 10. يجذب السياح
                 factorsHtml += `<div class="factor-card"><span class="pill pos">محفز</span><div class="factor-content"><div class="factor-title">يجذب السياح</div><div class="factor-desc">التقييم: ${result.tourist_attract}</div></div></div>`;
-                // 11. النشاط موسمي
                 factorsHtml += `<div class="factor-card"><span class="pill pos">مدروس</span><div class="factor-content"><div class="factor-title">النشاط موسمي</div><div class="factor-desc">التقييم: ${result.is_seasonal}</div></div></div>`;
-                // 12. الموقع يخدم الحركة السياحية
                 factorsHtml += `<div class="factor-card"><span class="pill pos">استراتيجي</span><div class="factor-content"><div class="factor-title">الموقع يخدم الحركة السياحية</div><div class="factor-desc">التقييم: ${result.location_tourism}</div></div></div>`;
 
                 document.getElementById("factorsContainer").innerHTML = factorsHtml;
@@ -443,7 +430,7 @@
                         recsHtml += `<div class="rec-item"><span>💡</span><p>${rec}</p></div>`;
                     });
                 } else {
-                    recsHtml = `<div class="rec-item"><span>💡</span><p>مؤشرات المشروع متوازنة وتتماشى مع أنماط السوق.</p></div>`;
+                    recsHtml = `<div class="rec-item"><span>💡</span><p>مؤشرات المشروع متوازنة وتتماشى مع أنماط السوق الناجحة.</p></div>`;
                 }
 
                 document.getElementById("recommendationsBox").innerHTML = recsHtml;
